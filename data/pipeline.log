@@ -1,0 +1,84 @@
+[2026-06-30 00:30:00] === 일일 파이프라인 시작: 2026-06-29 ===
+[2026-06-30 00:30:00] [1/4] 메타 데이터 수집
+[2026-06-30 00:30:02] [2/4] 카페24 데이터 수집
+[2026-06-30 00:30:04] [3/4] 쿠팡 데이터 수집
+[2026-06-30 00:30:06] [4/4] 디스코드 리포트 발송
+[2026-06-30 00:30:07] === 일일 파이프라인 완료: 2026-06-29 ===
+[2026-07-01 00:15:14] === 일일 파이프라인 시작: 2026-06-30 ===
+[2026-07-01 00:15:14] [1/4] 메타 데이터 수집
+[2026-07-01 00:15:16] [2/4] 카페24 데이터 수집
+[2026-07-01 00:15:17] [3/4] 쿠팡 데이터 수집
+[2026-07-01 00:15:17] 파이프라인 실패:
+Traceback (most recent call last):
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\daily_pipeline.py", line 51, in <module>
+    run(yesterday)
+    ~~~^^^^^^^^^^^
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\daily_pipeline.py", line 40, in run
+    collect_coupang(report_date, report_date)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collect_coupang_range.py", line 21, in main
+    order_count, item_quantity, sales_amount = summarize_daily_sales(d)
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collectors\coupang.py", line 91, in summarize_daily_sales
+    orders = fetch_ordersheets(date)
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collectors\coupang.py", line 65, in fetch_ordersheets
+    data = _request("GET", path, params)
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collectors\coupang.py", line 39, in _request
+    resp.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\hyoo2\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\requests\models.py", line 1167, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://api-gateway.coupang.com/v2/providers/openapi/apis/api/v4/vendors/A01613201/ordersheets?createdAtFrom=2026-06-30&createdAtTo=2026-06-30&status=ACCEPT&maxPerPage=50
+
+[2026-07-02 00:15:09] === 일일 파이프라인 시작: 2026-07-01 ===
+[2026-07-02 00:15:09] [1/4] 메타 데이터 수집
+[2026-07-02 00:15:11] [2/4] 카페24 데이터 수집
+[2026-07-02 00:15:12] [3/4] 쿠팡 데이터 수집
+[2026-07-02 00:15:13] 파이프라인 실패:
+Traceback (most recent call last):
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\daily_pipeline.py", line 51, in <module>
+    run(yesterday)
+    ~~~^^^^^^^^^^^
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\daily_pipeline.py", line 40, in run
+    collect_coupang(report_date, report_date)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collect_coupang_range.py", line 21, in main
+    order_count, item_quantity, sales_amount = summarize_daily_sales(d)
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collectors\coupang.py", line 91, in summarize_daily_sales
+    orders = fetch_ordersheets(date)
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collectors\coupang.py", line 65, in fetch_ordersheets
+    data = _request("GET", path, params)
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collectors\coupang.py", line 39, in _request
+    resp.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\hyoo2\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\requests\models.py", line 1167, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://api-gateway.coupang.com/v2/providers/openapi/apis/api/v4/vendors/A01613201/ordersheets?createdAtFrom=2026-07-01&createdAtTo=2026-07-01&status=ACCEPT&maxPerPage=50
+
+[2026-07-03 00:15:08] === 일일 파이프라인 시작: 2026-07-02 ===
+[2026-07-03 00:15:08] [1/4] 메타 데이터 수집
+[2026-07-03 00:15:09] [2/4] 카페24 데이터 수집
+[2026-07-03 00:15:10] [3/4] 쿠팡 데이터 수집
+[2026-07-03 00:15:11] 파이프라인 실패:
+Traceback (most recent call last):
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\daily_pipeline.py", line 51, in <module>
+    run(yesterday)
+    ~~~^^^^^^^^^^^
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\daily_pipeline.py", line 40, in run
+    collect_coupang(report_date, report_date)
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collect_coupang_range.py", line 21, in main
+    order_count, item_quantity, sales_amount = summarize_daily_sales(d)
+                                               ~~~~~~~~~~~~~~~~~~~~~^^^
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collectors\coupang.py", line 91, in summarize_daily_sales
+    orders = fetch_ordersheets(date)
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collectors\coupang.py", line 65, in fetch_ordersheets
+    data = _request("GET", path, params)
+  File "C:\Users\hyoo2\OneDrive\바탕 화면\클로드 자동화\헥사큐아쿠아메딘\collectors\coupang.py", line 39, in _request
+    resp.raise_for_status()
+    ~~~~~~~~~~~~~~~~~~~~~^^
+  File "C:\Users\hyoo2\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\requests\models.py", line 1167, in raise_for_status
+    raise HTTPError(http_error_msg, response=self)
+requests.exceptions.HTTPError: 403 Client Error: Forbidden for url: https://api-gateway.coupang.com/v2/providers/openapi/apis/api/v4/vendors/A01613201/ordersheets?createdAtFrom=2026-07-02&createdAtTo=2026-07-02&status=ACCEPT&maxPerPage=50
+

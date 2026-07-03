@@ -1,0 +1,54 @@
+name: 실시간 주문 알림 (Cafe24 + 쿠팡)
+
+on:
+  schedule:
+    - cron: '*/5 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  actions: write  # CAFE24_REFRESH_TOKEN Variable 갱신용
+
+jobs:
+  check-orders:
+    runs-on: ubuntu-latest
+    timeout-minutes: 4
+
+    steps:
+      - name: 코드 체크아웃
+        uses: actions/checkout@v4
+
+      - name: 주문 알림 상태 복원
+        uses: actions/cache@v4
+        with:
+          path: data/notified_cloud.json
+          key: order-state-${{ github.run_id }}
+          restore-keys: |
+            order-state-
+
+      - name: Python 설정
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+          cache: 'pip'
+
+      - name: 의존성 설치
+        run: pip install -r requirements.txt
+
+      - name: 주문 확인 및 Discord 알림 발송
+        env:
+          CAFE24_CLIENT_ID: ${{ secrets.CAFE24_CLIENT_ID }}
+          CAFE24_CLIENT_SECRET: ${{ secrets.CAFE24_CLIENT_SECRET }}
+          CAFE24_MALL_ID: ${{ secrets.CAFE24_MALL_ID }}
+          CAFE24_REDIRECT_URI: ${{ secrets.CAFE24_REDIRECT_URI }}
+          CAFE24_REFRESH_TOKEN: ${{ vars.CAFE24_REFRESH_TOKEN }}
+          CAFE24_TARGET_KEYWORD: ${{ secrets.CAFE24_TARGET_KEYWORD }}
+          COUPANG_ACCESS_KEY: ${{ secrets.COUPANG_ACCESS_KEY }}
+          COUPANG_SECRET_KEY: ${{ secrets.COUPANG_SECRET_KEY }}
+          COUPANG_VENDOR_ID: ${{ secrets.COUPANG_VENDOR_ID }}
+          COUPANG_TARGET_KEYWORD: ${{ secrets.COUPANG_TARGET_KEYWORD }}
+          DISCORD_WEBHOOK_URL_ORDERS: ${{ secrets.DISCORD_WEBHOOK_URL_ORDERS }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          META_ACCESS_TOKEN: unused
+          META_AD_ACCOUNT_ID: unused
