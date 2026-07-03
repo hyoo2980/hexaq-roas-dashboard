@@ -47,3 +47,4 @@ jobs:
           GITHUB_REPOSITORY: ${{ github.repository }}
           META_ACCESS_TOKEN: unused
           META_AD_ACCOUNT_ID: unused
+        run: python cloud_order_watcher.py
