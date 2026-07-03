@@ -1,4 +1,4 @@
-name: 실시간 주문 알림 (Cafe24 + 쿠팡)
+name: 실시간 주문 알림 (Cafe24)
 
 on:
   schedule:
@@ -7,7 +7,6 @@ on:
 
 permissions:
   contents: read
-  actions: write  # CAFE24_REFRESH_TOKEN Variable 갱신용
 
 jobs:
   check-orders:
@@ -43,12 +42,8 @@ jobs:
           CAFE24_REDIRECT_URI: ${{ secrets.CAFE24_REDIRECT_URI }}
           CAFE24_REFRESH_TOKEN: ${{ vars.CAFE24_REFRESH_TOKEN }}
           CAFE24_TARGET_KEYWORD: ${{ secrets.CAFE24_TARGET_KEYWORD }}
-          COUPANG_ACCESS_KEY: ${{ secrets.COUPANG_ACCESS_KEY }}
-          COUPANG_SECRET_KEY: ${{ secrets.COUPANG_SECRET_KEY }}
-          COUPANG_VENDOR_ID: ${{ secrets.COUPANG_VENDOR_ID }}
-          COUPANG_TARGET_KEYWORD: ${{ secrets.COUPANG_TARGET_KEYWORD }}
           DISCORD_WEBHOOK_URL_ORDERS: ${{ secrets.DISCORD_WEBHOOK_URL_ORDERS }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_PAT: ${{ secrets.GH_PAT }}
           GITHUB_REPOSITORY: ${{ github.repository }}
           META_ACCESS_TOKEN: unused
           META_AD_ACCOUNT_ID: unused

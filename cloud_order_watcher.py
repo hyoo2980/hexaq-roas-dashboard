@@ -1,10 +1,11 @@
 """GitHub Actions에서 5분마다 실행되는 주문 알림 스크립트 (헥사큐 아쿠아메딘).
 
-Cafe24 + 쿠팡 채널을 체크. 루프 없이 1회 실행 후 종료.
+Cafe24 채널만 체크 (쿠팡은 실시간 알림 불필요, 네이버 없음).
+루프 없이 1회 실행 후 종료.
 상태(알림 보낸 주문 ID + 오늘 누적금액)는 data/notified_cloud.json에 저장하고,
 GitHub Actions cache로 run 간에 유지한다.
 
-Cafe24 리프레시 토큰 갱신은 .env 대신 GitHub Repository Variables API를 통해 저장.
+Cafe24 리프레시 토큰 갱신은 .env 대신 GitHub Repository Variables API(GH_PAT)로 저장.
 """
 
 import json
@@ -23,7 +24,8 @@ import config
 
 
 def _update_github_variable(name: str, value: str):
-    gh_token = os.environ.get("GITHUB_TOKEN", "")
+    # GITHUB_TOKEN은 Variables API 수정 권한 없음 → PAT(GH_PAT) 사용
+    gh_token = os.environ.get("GH_PAT", "") or os.environ.get("GITHUB_TOKEN", "")
     gh_repo = os.environ.get("GITHUB_REPOSITORY", "")
     if not gh_token or not gh_repo:
         print(f"[WARN] GitHub variable 업데이트 불가 ({name})")
@@ -80,19 +82,16 @@ def save_state(state: dict):
 # ──────────────────────────────────────────────────────────────────
 # Discord 알림
 # ──────────────────────────────────────────────────────────────────
-EMOJI = {"cafe24": "🛍️", "coupang": "📦"}
-LABEL = {"cafe24": "자사몰(카페24)", "coupang": "쿠팡"}
-COLOR = {"cafe24": 0x1E88E5, "coupang": 0xE53935}
 WEBHOOK_URL = os.environ.get("DISCORD_WEBHOOK_URL_ORDERS", "")
 
 
-def send_alert(platform: str, order_id: str, amount: float, cumulative: float, detail: str = ""):
+def send_alert(order_id: str, amount: float, cumulative: float, detail: str = ""):
     if not WEBHOOK_URL:
         print("[WARN] DISCORD_WEBHOOK_URL_ORDERS 미설정")
         return
     embed = {
-        "title": f"{EMOJI[platform]} 새 주문 — {LABEL[platform]}",
-        "color": COLOR[platform],
+        "title": "🛍️ 새 주문 — 자사몰(카페24)",
+        "color": 0x1E88E5,
         "fields": [
             {"name": "주문번호", "value": str(order_id), "inline": True},
             {"name": "금액", "value": f"{amount:,.0f}원", "inline": True},
@@ -101,7 +100,16 @@ def send_alert(platform: str, order_id: str, amount: float, cumulative: float, d
     }
     if detail:
         embed["fields"].append({"name": "상세", "value": detail, "inline": False})
-    resp = http.post(WEBHOOK_URL, json={"embeds": [embed]}, timeout=30)
+    # Discord 429 재시도
+    delay = 2.0
+    for _ in range(4):
+        resp = http.post(WEBHOOK_URL, json={"embeds": [embed]}, timeout=30)
+        if resp.status_code == 429:
+            time.sleep(delay)
+            delay *= 2
+            continue
+        resp.raise_for_status()
+        return
     resp.raise_for_status()
 
 
@@ -131,42 +139,9 @@ def check_cafe24(today: str, seen: dict, cumulative: float, is_bootstrap: bool) 
         else:
             cumulative += amount
             names = ", ".join(i.get("product_name", "") for i in target_items)
-            send_alert("cafe24", oid, amount, cumulative, detail=names)
+            send_alert(oid, amount, cumulative, detail=names)
             seen[key] = amount
             new_count += 1
-
-    return new_count, cumulative
-
-
-def check_coupang(today: str, seen: dict, cumulative: float, is_bootstrap: bool) -> tuple[int, float]:
-    from collectors.coupang import _is_target_item, fetch_ordersheets
-
-    orders = fetch_ordersheets(today)
-    new_count = 0
-    for o in orders:
-        items = o.get("orderItems", [])
-        target_items = [i for i in items if _is_target_item(i)]
-        if not target_items or len(target_items) != len(items):
-            continue
-
-        oid = str(o["orderId"])
-        key = f"coupang:{oid}"
-        if key in seen:
-            continue
-
-        amount = sum(float(i.get("salesPrice", 0)) * int(i.get("shippingCount", 1)) for i in target_items)
-        amount += float(o.get("shippingPrice", 0))
-
-        if is_bootstrap:
-            seen[key] = amount
-            cumulative += amount
-        else:
-            cumulative += amount
-            names = ", ".join(i.get("sellerProductName", "") for i in target_items)
-            send_alert("coupang", oid, amount, cumulative, detail=names)
-            seen[key] = amount
-            new_count += 1
-            time.sleep(0.3)
 
     return new_count, cumulative
 
@@ -182,6 +157,9 @@ def main():
         state = {"date": today, "seen": {}, "cumulative": 0.0}
         is_bootstrap = True
         print(f"[INFO] 새 날짜({today}) — 상태 초기화 및 부트스트랩 실행")
+    elif not state.get("seen"):
+        is_bootstrap = True
+        print(f"[INFO] seen이 비어있음 — 부트스트랩 재실행")
     else:
         is_bootstrap = False
 
@@ -195,12 +173,6 @@ def main():
         print(f"[INFO] Cafe24: 신규 알림 {new_c}건")
     except Exception:
         print(f"[ERROR] Cafe24 체크 실패:\n{traceback.format_exc()}")
-
-    try:
-        new_cp, cumulative = check_coupang(today, seen, cumulative, is_bootstrap)
-        print(f"[INFO] 쿠팡: 신규 알림 {new_cp}건")
-    except Exception:
-        print(f"[ERROR] 쿠팡 체크 실패:\n{traceback.format_exc()}")
 
     state["seen"] = seen
     state["cumulative"] = cumulative
