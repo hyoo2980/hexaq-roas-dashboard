@@ -12,7 +12,7 @@ import json
 import os
 import time
 import traceback
-from datetime import date
+from datetime import datetime, timezone, timedelta
 from pathlib import Path
 
 import requests as http
@@ -149,8 +149,11 @@ def check_cafe24(today: str, seen: dict, cumulative: float, is_bootstrap: bool) 
 # ──────────────────────────────────────────────────────────────────
 # Main
 # ──────────────────────────────────────────────────────────────────
+_KST = timezone(timedelta(hours=9))
+
+
 def main():
-    today = date.today().isoformat()
+    today = datetime.now(_KST).date().isoformat()
 
     state = load_state()
     if state.get("date") != today:
