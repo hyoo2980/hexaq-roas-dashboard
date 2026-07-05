@@ -160,9 +160,10 @@ def main():
         state = {"date": today, "seen": {}, "cumulative": 0.0}
         is_bootstrap = True
         print(f"[INFO] 새 날짜({today}) — 상태 초기화 및 부트스트랩 실행")
-    elif not state.get("seen"):
+    elif "seen" not in state:
+        # seen 키 자체가 없는 경우만 재부트스트랩 (빈 딕셔너리는 정상 상태)
         is_bootstrap = True
-        print(f"[INFO] seen이 비어있음 — 부트스트랩 재실행")
+        print(f"[INFO] seen 키 없음 — 부트스트랩 재실행")
     else:
         is_bootstrap = False
 
