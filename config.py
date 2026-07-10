@@ -55,7 +55,9 @@ def get_env_value(key: str, default: str = "") -> str:
 
 
 def update_env_value(key: str, value: str):
-    """Persist a single key=value into the .env file, used for rotating Cafe24 refresh tokens."""
+    """Persist a single key=value into the .env file, used for rotating Cafe24 refresh tokens.
+    Also syncs to GitHub Actions Variable if GH_PAT + GITHUB_REPOSITORY are available,
+    so the cloud order watcher always has the latest token."""
     lines = ENV_PATH.read_text(encoding="utf-8").splitlines()
     found = False
     new_lines = []
@@ -68,3 +70,22 @@ def update_env_value(key: str, value: str):
     if not found:
         new_lines.append(f"{key}={value}")
     ENV_PATH.write_text("\n".join(new_lines) + "\n", encoding="utf-8")
+
+    # GitHub Variable 동기화 — 로컬 daily pipeline이 토큰 rotate 후 클라우드와 동기화
+    gh_pat = os.environ.get("GH_PAT", "")
+    gh_repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if gh_pat and gh_repo:
+        try:
+            import requests as _req
+            _req.patch(
+                f"https://api.github.com/repos/{gh_repo}/actions/variables/{key}",
+                headers={
+                    "Authorization": f"Bearer {gh_pat}",
+                    "Accept": "application/vnd.github+json",
+                    "X-GitHub-Api-Version": "2022-11-28",
+                },
+                json={"name": key, "value": value},
+                timeout=10,
+            )
+        except Exception:
+            pass
