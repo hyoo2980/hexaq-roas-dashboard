@@ -45,6 +45,9 @@ def _refresh_access_token():
 
     config.CAFE24_REFRESH_TOKEN = data["refresh_token"]
     config.update_env_value("CAFE24_REFRESH_TOKEN", data["refresh_token"])
+    # access token + 만료시각도 저장 → 클라우드 워처가 재사용 가능 (2시간마다만 rotate)
+    config.update_env_value("CAFE24_ACCESS_TOKEN", data["access_token"])
+    config.update_env_value("CAFE24_ACCESS_TOKEN_EXPIRES_AT", data["expires_at"])
 
     _token_cache["access_token"] = data["access_token"]
     return data["access_token"]
