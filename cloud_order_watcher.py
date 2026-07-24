@@ -34,13 +34,16 @@ def _update_github_variable(name: str, value: str):
         "X-GitHub-Api-Version": "2022-11-28",
     }
     base_url = f"https://api.github.com/repos/{gh_repo}/actions/variables"
-    resp = http.patch(f"{base_url}/{name}", headers=headers, json={"name": name, "value": value}, timeout=10)
-    if resp.status_code == 404:
-        resp = http.post(base_url, headers=headers, json={"name": name, "value": value}, timeout=10)
-    if resp.ok:
-        print(f"[INFO] GitHub variable '{name}' 갱신 완료")
-    else:
-        print(f"[WARN] GitHub variable '{name}' 갱신 실패: {resp.status_code} {resp.text[:200]}")
+    try:
+        resp = http.patch(f"{base_url}/{name}", headers=headers, json={"name": name, "value": value}, timeout=10)
+        if resp.status_code == 404:
+            resp = http.post(base_url, headers=headers, json={"name": name, "value": value}, timeout=10)
+        if resp.ok:
+            print(f"[INFO] GitHub variable '{name}' 갱신 완료")
+        else:
+            print(f"[WARN] GitHub variable '{name}' 갱신 실패: {resp.status_code} {resp.text[:200]}")
+    except Exception as e:
+        print(f"[WARN] GitHub variable '{name}' 갱신 중 네트워크 오류 (무시): {e}")
 
 
 def _patched_update_env(key: str, value: str):
