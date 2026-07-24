@@ -5,6 +5,7 @@ on:
 
 permissions:
   contents: read
+  actions: write  # ORDER_STATE GitHub Variable 갱신용
 
 concurrency:
   group: order-watcher-hexaq
@@ -18,14 +19,6 @@ jobs:
     steps:
       - name: 코드 체크아웃
         uses: actions/checkout@v4
-
-      - name: 주문 알림 상태 복원
-        uses: actions/cache@v4
-        with:
-          path: data/notified_cloud.json
-          key: order-state-${{ github.run_id }}
-          restore-keys: |
-            order-state-
 
       - name: Python 설정
         uses: actions/setup-python@v5
