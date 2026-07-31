@@ -83,7 +83,7 @@ def fetch_orders(date: str):
             {
                 "start_date": date,
                 "end_date": date,
-                "date_type": "pay_date",
+                "date_type": "order_date",
                 "embed": "items",
                 "limit": limit,
                 "offset": offset,
