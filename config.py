@@ -40,12 +40,54 @@ ENV_PATH = ROOT_DIR / ".env"
 DB_PATH = ROOT_DIR / "data" / "roas.db"
 
 
+# Cafe24는 refresh token을 쓸 때마다 회전시키고 직전 것을 무효화한다. 로컬(.env)과
+# 클라우드 워처(GitHub Variable)가 각자 다른 사본을 들고 회전시키면 체인이 갈라져
+# 한쪽이 반드시 죽는다. GitHub Variable을 단일 진실 공급원으로 삼아 양쪽이 같은
+# 체인을 쓰도록 하고, .env는 폴백으로만 둔다.
+_GITHUB_SYNCED_KEYS = {
+    "CAFE24_REFRESH_TOKEN",
+    "CAFE24_ACCESS_TOKEN",
+    "CAFE24_ACCESS_TOKEN_EXPIRES_AT",
+}
+
+
+def _read_github_variable(key: str) -> str:
+    gh_pat = os.environ.get("GH_PAT", "")
+    gh_repo = os.environ.get("GITHUB_REPOSITORY", "")
+    if not gh_pat or not gh_repo:
+        return ""
+    try:
+        import requests as _req
+
+        _h = {
+            "Authorization": f"Bearer {gh_pat}",
+            "Accept": "application/vnd.github+json",
+            "X-GitHub-Api-Version": "2022-11-28",
+        }
+        _r = _req.get(
+            f"https://api.github.com/repos/{gh_repo}/actions/variables/{key}",
+            headers=_h,
+            timeout=10,
+        )
+        if _r.ok:
+            return _r.json().get("value", "")
+    except Exception:
+        pass
+    return ""
+
+
 def get_env_value(key: str, default: str = "") -> str:
-    """Re-reads a single key's current value straight from the .env file on disk,
-    bypassing the cached module attribute. Needed for CAFE24_REFRESH_TOKEN: Cafe24
-    rotates the refresh token on every use, and a long-running process (the
-    realtime watcher) must not refresh using a stale in-memory copy that another
-    process (the daily pipeline cron) may have already rotated on disk."""
+    """Re-reads a single key's current value, bypassing the cached module attribute.
+    Needed for CAFE24_REFRESH_TOKEN: Cafe24 rotates the refresh token on every use,
+    so a stale in-memory copy must never be used to refresh.
+
+    For the GitHub-synced token keys the Variable wins over .env -- the cloud watcher
+    rotates every couple of hours, so a local .env copy goes stale within the day."""
+    if key in _GITHUB_SYNCED_KEYS:
+        remote = _read_github_variable(key)
+        if remote:
+            return remote
+
     if not ENV_PATH.exists():
         return default
     for line in ENV_PATH.read_text(encoding="utf-8").splitlines():
